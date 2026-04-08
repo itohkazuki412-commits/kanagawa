@@ -1,5 +1,5 @@
 :root {
-  --bg: #f4f0e8;
+  --bg: #e7eef4;
   --surface: rgba(255, 255, 255, 0.82);
   --surface-strong: #ffffff;
   --line: rgba(9, 35, 59, 0.12);
@@ -27,8 +27,8 @@ body {
   font-family: 'Noto Sans JP', sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at top left, rgba(255, 169, 77, 0.16), transparent 26%),
-    linear-gradient(180deg, #f7f2e9 0%, #eff4f7 42%, #fbfbfc 100%);
+    radial-gradient(circle at top left, rgba(16, 152, 226, 0.12), transparent 24%),
+    linear-gradient(180deg, #e9f1f6 0%, #eff4f7 40%, #fbfbfc 100%);
 }
 
 a {
@@ -66,8 +66,8 @@ video {
   place-items: center;
   padding: 24px;
   background:
-    radial-gradient(circle at top left, rgba(255, 169, 77, 0.16), transparent 26%),
-    linear-gradient(180deg, #f7f2e9 0%, #eff4f7 42%, #fbfbfc 100%);
+    radial-gradient(circle at top left, rgba(16, 152, 226, 0.12), transparent 24%),
+    linear-gradient(180deg, #e9f1f6 0%, #eff4f7 40%, #fbfbfc 100%);
 }
 
 .app-state-card {
@@ -133,12 +133,13 @@ video {
 }
 
 .site-header {
-  position: sticky;
+  position: absolute;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 50;
-  background: rgba(244, 240, 232, 0.78);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(16, 37, 58, 0.08);
+  background: transparent;
+  border-bottom: 0;
 }
 
 .header-row {
@@ -146,7 +147,7 @@ video {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 14px 0;
+  padding: 24px 0 0;
 }
 
 .brand-mark {
@@ -175,10 +176,11 @@ video {
 
 .brand-copy strong {
   font-size: 1rem;
+  color: #fff;
 }
 
 .brand-copy small {
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.82);
   letter-spacing: 0.18em;
   font-size: 0.7rem;
 }
@@ -192,7 +194,16 @@ video {
 .site-nav a {
   padding: 10px 14px;
   border-radius: 999px;
-  color: var(--muted);
+}
+
+.site-header .site-nav > a:not(.button-nav) {
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 1px 8px rgba(4, 15, 28, 0.22);
+}
+
+.site-header .site-nav > a:not(.button-nav):hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
 .menu-toggle {
@@ -201,15 +212,16 @@ video {
   height: 48px;
   border: 0;
   border-radius: 14px;
-  background: rgba(7, 39, 71, 0.08);
+  background: rgba(255, 255, 255, 0.12);
   padding: 0;
+  backdrop-filter: blur(10px);
 }
 
 .menu-toggle span {
   display: block;
   width: 22px;
   height: 2px;
-  background: var(--navy);
+  background: #fff;
   margin: 5px auto;
 }
 
@@ -274,6 +286,10 @@ video {
 
 .button-nav {
   min-height: 44px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: none;
 }
 
 .hero-section {
@@ -285,8 +301,8 @@ video {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 18% 15%, rgba(255, 180, 94, 0.22), transparent 24%),
-    radial-gradient(circle at 88% 18%, rgba(17, 152, 226, 0.18), transparent 20%);
+    radial-gradient(circle at 18% 15%, rgba(101, 201, 255, 0.16), transparent 22%),
+    radial-gradient(circle at 88% 18%, rgba(17, 152, 226, 0.16), transparent 20%);
   pointer-events: none;
 }
 
@@ -1398,10 +1414,11 @@ input[type='range'] {
     align-items: stretch;
     gap: 6px;
     padding: 12px;
-    border: 1px solid rgba(16, 37, 58, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 24px;
-    background: rgba(255, 255, 255, 0.94);
-    box-shadow: var(--shadow);
+    background: rgba(5, 20, 36, 0.74);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 18px 40px rgba(7, 28, 50, 0.24);
   }
 
   .site-nav.open {
@@ -1410,7 +1427,7 @@ input[type='range'] {
 
   .site-nav a {
     text-align: center;
-    color: var(--text);
+    color: rgba(255, 255, 255, 0.9);
   }
 
   .hero-section {
