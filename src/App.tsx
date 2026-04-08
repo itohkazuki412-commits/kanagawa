@@ -6,6 +6,7 @@ const navItems = [
   { href: '#service', label: '仕事内容' },
   { href: '#simulator', label: '収入例' },
   { href: '#members', label: 'メンバー' },
+  { href: '#faq', label: 'Q&A' },
   { href: '#contact', label: '応募・連絡' },
 ];
 
@@ -463,29 +464,56 @@ function App() {
           </div>
         </section>
 
-        <section className="section section-dark" id="recruit">
+        <section className="section recruit-section" id="recruit">
           <div className="container">
-            <div className="section-heading">
+            <div className="section-heading recruit-heading">
               <p className="eyebrow">RECRUIT</p>
               <h2>募集職種</h2>
-              <p>応募前に仕事内容と報酬イメージが分かるよう、カード形式で整理しています。</p>
+              <p>現在募集中の働き方や報酬イメージを、一覧で分かりやすく確認できるように整理しています。</p>
             </div>
-            <div className="job-grid">
+            <div className="recruit-list">
               {siteData.jobs.map((job) => (
-                <article
+                <a
                   key={job.title}
-                  className={`job-card ${job.isRecruiting ? 'is-open' : 'is-closed'} job-card-${job.theme}`}
+                  className={`recruit-item ${job.isRecruiting ? 'is-open' : 'is-closed'} recruit-item-${job.theme}`}
+                  href="#contact"
                 >
-                  <div className="job-card-strip" />
-                  <h3>{job.title}</h3>
-                  {!job.isRecruiting && <p className="status-note status-note-dark">※現在は募集しておりません</p>}
-                  {job.isRecruiting && <p className="job-open-label">現在募集中</p>}
-                  <strong>{job.pay}</strong>
-                  <p>{job.body}</p>
-                </article>
+                  <div className="recruit-item-body">
+                    <h3>{job.title}</h3>
+                    {!job.isRecruiting && <p className="recruit-status-note">※現在は募集しておりません</p>}
+                    <div className="recruit-meta">
+                      <p>
+                        <span>勤務時間</span>
+                        <strong>{job.schedule}</strong>
+                      </p>
+                      <p>
+                        <span>報酬</span>
+                        <strong>{job.reward}</strong>
+                      </p>
+                    </div>
+                    <p className="recruit-summary">{job.body}</p>
+                    <ul className="recruit-examples">
+                      {job.examples.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <span className="recruit-arrow" aria-hidden="true">
+                    ›
+                  </span>
+                </a>
               ))}
             </div>
+          </div>
+        </section>
 
+        <section className="section faq-section" id="faq">
+          <div className="container">
+            <div className="section-heading faq-heading">
+              <p className="eyebrow">Q&A</p>
+              <h2>よくある質問</h2>
+              <p>応募前にいただくことの多い質問を、まとめて確認できるようにしています。</p>
+            </div>
             <div className="faq-grid">
               {siteData.faq.map((item, index) => (
                 <article key={item.q} className={`faq-item ${openFaqIndex === index ? 'open' : ''}`}>
