@@ -1,3 +1,5 @@
+const asset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
+
 export const siteData = {
   company: {
     name: 'JLS合同会社',
@@ -13,8 +15,8 @@ export const siteData = {
     entryUrl: '#contact',
   },
   heroVideo: {
-    src: '/media/hero-video.mp4',
-    poster: '/media/hero-slide-1.jpg',
+    src: asset('media/hero-video.mp4'),
+    poster: asset('media/hero-slide-1.jpg'),
     label: 'TEMPORARY MOVIE',
     note: '仮動画 / 後から差し替え可能',
   },
@@ -25,7 +27,7 @@ export const siteData = {
       text: '横浜エリア中心の軽貨物ドライバー募集。研修、案件相談、稼働後フォローまで一貫して支えます。',
       stats: ['未経験歓迎', '副業相談OK', '車両相談可'],
       theme: 'sunrise',
-      image: '/media/hero-slide-1.jpg',
+      image: asset('media/hero-slide-1.jpg'),
     },
     {
       eyebrow: 'FLEXIBLE WORK STYLE',
@@ -33,7 +35,7 @@ export const siteData = {
       text: '安定して働きたい方にも、空いた時間で収入を増やしたい方にも、案件を組み合わせて提案できます。',
       stats: ['定期便', 'スポット便', '夜間案件'],
       theme: 'marine',
-      image: '/media/hero-slide-2.jpg',
+      image: asset('media/hero-slide-2.jpg'),
     },
     {
       eyebrow: 'TEAM & SUPPORT',
@@ -41,7 +43,7 @@ export const siteData = {
       text: '採用前の相談から実稼働後の不安まで、現場感のあるサポートを大切にしています。',
       stats: ['研修あり', '相談しやすい', '長期稼働歓迎'],
       theme: 'amber',
-      image: '/media/hero-slide-3.jpg',
+      image: asset('media/hero-slide-3.jpg'),
     },
   ],
   strengths: [
@@ -49,19 +51,19 @@ export const siteData = {
       no: '01',
       title: '働き方を選びやすい',
       text: '定期便、スポット、夜間仕分けなど幅広い案件を用意。希望収入や生活リズムに合わせて相談できます。',
-      image: '/media/hero-slide-1.jpg',
+      image: asset('media/hero-slide-1.jpg'),
     },
     {
       no: '02',
       title: '未経験でも始めやすい',
       text: '業務の流れ、安全面、配送時の基本まで段階的に共有。配送業が初めての方にも馴染みやすい体制です。',
-      image: '/media/hero-slide-2.jpg',
+      image: asset('media/hero-slide-2.jpg'),
     },
     {
       no: '03',
       title: '収入の見通しを持ちやすい',
       text: '案件ごとの報酬イメージや日数目安を事前に確認しながら、自分に合う稼働量を組み立てられます。',
-      image: '/media/hero-slide-3.jpg',
+      image: asset('media/hero-slide-3.jpg'),
     },
   ],
   serviceBlocks: [
@@ -70,18 +72,21 @@ export const siteData = {
       text: '企業配送や固定ルート中心。毎月の収入を安定させたい方に向いています。',
       points: ['平日中心の案件あり', '安定稼働しやすい', '長期前提の相談可'],
       isRecruiting: true,
+      theme: 'regular',
     },
     {
       title: 'スポット便',
       text: '単発や短時間案件を組み合わせ、柔軟に収入を積み上げられる働き方です。',
       points: ['空き時間活用', '高単価案件あり', '副業相談可'],
       isRecruiting: false,
+      theme: 'spot',
     },
     {
       title: '夜間仕分け',
       text: '本業後や早朝前など、限られた時間を活かして働きたい方に人気の案件です。',
       points: ['短時間案件', 'ダブルワーク向き', '体力に応じて調整可'],
       isRecruiting: false,
+      theme: 'night',
     },
   ],
   fleetBlocks: [
@@ -99,25 +104,25 @@ export const siteData = {
       name: 'K. Sasaki',
       role: '採用担当',
       comment: 'まずは不安や希望条件を聞くところから始めています。',
-      image: '/media/member-1.jpg',
+      image: asset('media/member-1.jpg'),
     },
     {
       name: 'Y. Tanaka',
       role: '配車サポート',
       comment: '稼働日数や目標月収に合わせた案件相談を担当します。',
-      image: '/media/member-2.jpg',
+      image: asset('media/member-2.jpg'),
     },
     {
       name: 'M. Suzuki',
       role: '教育担当',
       comment: '初稼働までの流れを分かりやすくお伝えします。',
-      image: '/media/member-3.jpg',
+      image: asset('media/member-3.jpg'),
     },
     {
       name: 'R. Arai',
       role: '現場フォロー',
       comment: '始めた後も困りごとを一人で抱えない体制を整えています。',
-      image: '/media/member-4.jpg',
+      image: asset('media/member-4.jpg'),
     },
   ],
   jobs: [
@@ -126,18 +131,21 @@ export const siteData = {
       pay: '日額 15,000円〜',
       body: '固定に近いスケジュールで、安定して働きたい方向け。企業配送やルート配送を想定しています。',
       isRecruiting: true,
+      theme: 'regular',
     },
     {
       title: 'スポット配送ドライバー',
       pay: '案件単価 6,000円〜15,000円',
       body: '単発案件を中心に、空いた時間を活かしたい方向け。副業や併用も相談可能です。',
       isRecruiting: false,
+      theme: 'spot',
     },
     {
       title: '夜間仕分けスタッフ',
       pay: '5時間 7,000円〜',
       body: '短時間で働きたい方向け。深夜帯や早朝案件など、生活に合わせて組みやすい構成です。',
       isRecruiting: false,
+      theme: 'night',
     },
   ],
   faq: [

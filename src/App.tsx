@@ -13,6 +13,7 @@ type AppPhase = 'loading' | 'ready' | 'error';
 
 const MIN_LOADING_MS = 1200;
 const MAX_LOADING_MS = 9000;
+const logoAsset = `${import.meta.env.BASE_URL}favicon.svg`;
 
 function preloadImage(src: string) {
   return new Promise<void>((resolve) => {
@@ -103,6 +104,7 @@ function App() {
   }, [appPhase]);
 
   const activePlan = simulatorPlans.find((item) => item.id === plan) ?? simulatorPlans[0];
+  const memberLoops = [siteData.members, siteData.members];
 
   const monthlyIncome = useMemo(() => {
     return activePlan.dailyFee * days + activePlan.monthlyBase * extraJobs;
@@ -123,7 +125,7 @@ function App() {
         <div className="app-state-card" role={isError ? 'alert' : 'status'} aria-live="polite">
           <img
             className={`loading-logo ${isError ? '' : 'is-loading'}`}
-            src="/favicon.svg"
+            src={logoAsset}
             alt={`${siteData.company.name} ロゴ`}
           />
           <p className="state-eyebrow">{isError ? 'SERVER ERROR' : 'LOADING'}</p>
@@ -187,7 +189,7 @@ function App() {
       <main id="top">
         <section className="hero-section">
           <div className="hero-backdrop" />
-          <div className="container">
+          <div className="hero-full-bleed">
             <div className="hero-video-shell">
               <video
                 className="hero-video"
@@ -316,14 +318,14 @@ function App() {
                 <h2>仕事内容と対応サービス</h2>
               </div>
               <p className="heading-note">
-                定期便、スポット便、夜間案件の3軸で見せる構成にし、求職者が自分に近い働き方を選びやすくしています。
+                定期便、スポット便、夜間案件の3軸で整理し、働き方ごとの差が視覚的にも伝わる構成に整えています。
               </p>
             </div>
 
             <div className="service-grid">
               {siteData.serviceBlocks.map((item) => (
-                <article key={item.title} className="panel-card service-card">
-                  <div className="service-visual" />
+                <article key={item.title} className={`panel-card service-card service-card-${item.theme}`}>
+                  <div className={`service-visual service-visual-${item.theme}`} />
                   <h3>{item.title}</h3>
                   {!item.isRecruiting && <p className="status-note">※現在は募集しておりません</p>}
                   <p>{item.text}</p>
@@ -436,17 +438,27 @@ function App() {
                 いまは仮写真なので、差し替えるだけで実写に置き換えられます。
               </p>
             </div>
-            <div className="member-grid">
-              {siteData.members.map((member) => (
-                <article key={member.name} className="member-card">
-                  <div className="member-photo">
-                    <img className="member-photo-image" src={member.image} alt={`${member.role}の仮写真`} />
+            <div className="member-marquee">
+              <div className="member-track">
+                {memberLoops.map((group, loopIndex) => (
+                  <div
+                    key={`member-loop-${loopIndex}`}
+                    className="member-list"
+                    aria-hidden={loopIndex === 1}
+                  >
+                    {group.map((member) => (
+                      <article key={`${member.name}-${loopIndex}`} className="member-card member-card-flow">
+                        <div className="member-photo">
+                          <img className="member-photo-image" src={member.image} alt={`${member.role}の仮写真`} />
+                        </div>
+                        <h3>{member.name}</h3>
+                        <p className="member-role">{member.role}</p>
+                        <p>{member.comment}</p>
+                      </article>
+                    ))}
                   </div>
-                  <h3>{member.name}</h3>
-                  <p className="member-role">{member.role}</p>
-                  <p>{member.comment}</p>
-                </article>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -460,9 +472,14 @@ function App() {
             </div>
             <div className="job-grid">
               {siteData.jobs.map((job) => (
-                <article key={job.title} className="job-card">
+                <article
+                  key={job.title}
+                  className={`job-card ${job.isRecruiting ? 'is-open' : 'is-closed'} job-card-${job.theme}`}
+                >
+                  <div className="job-card-strip" />
                   <h3>{job.title}</h3>
                   {!job.isRecruiting && <p className="status-note status-note-dark">※現在は募集しておりません</p>}
+                  {job.isRecruiting && <p className="job-open-label">現在募集中</p>}
                   <strong>{job.pay}</strong>
                   <p>{job.body}</p>
                 </article>
@@ -495,7 +512,7 @@ function App() {
           </div>
         </section>
 
-        <section className="section" id="company">
+        <section className="section company-section" id="company">
           <div className="container company-grid">
             <div>
               <div className="section-heading">
@@ -531,7 +548,7 @@ function App() {
         </section>
 
         <section className="section contact-section" id="contact">
-          <div className="container contact-grid">
+          <div className="container contact-shell">
             <div className="contact-copy">
               <p className="eyebrow">CONTACT</p>
               <h2>応募・お問い合わせ</h2>
@@ -549,15 +566,27 @@ function App() {
               </div>
             </div>
 
-            <div className="contact-card">
-              <h3>掲載情報</h3>
-              <ul className="contact-list">
-                <li>会社名: {siteData.company.name}</li>
-                <li>住所: {siteData.company.address}</li>
-                <li>メール: {siteData.company.mail}</li>
-                <li>電話番号: {siteData.company.tel}</li>
-                <li>備考: 外部フォームやLINE導線を追加可能</li>
-              </ul>
+            <div className="contact-data">
+              <div className="contact-data-row">
+                <span>会社名</span>
+                <strong>{siteData.company.name}</strong>
+              </div>
+              <div className="contact-data-row">
+                <span>住所</span>
+                <strong>{siteData.company.address}</strong>
+              </div>
+              <div className="contact-data-row">
+                <span>メール</span>
+                <strong>{siteData.company.mail}</strong>
+              </div>
+              <div className="contact-data-row">
+                <span>電話番号</span>
+                <strong>{siteData.company.tel}</strong>
+              </div>
+              <div className="contact-data-row">
+                <span>備考</span>
+                <strong>外部フォームやLINE導線を追加可能</strong>
+              </div>
             </div>
           </div>
         </section>
