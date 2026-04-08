@@ -674,7 +674,7 @@ video {
   transform: translate3d(34px, 0, 0) scale(0.985);
 }
 
-.reveal-on-scroll.is-visible {
+.reveal-on-scroll[data-revealed='true'] {
   opacity: 1;
   filter: blur(0);
   transform: translate3d(0, 0, 0) scale(1);

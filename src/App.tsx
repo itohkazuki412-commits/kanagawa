@@ -118,7 +118,7 @@ function App() {
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
-      elements.forEach((element) => element.classList.add('is-visible'));
+      elements.forEach((element) => element.setAttribute('data-revealed', 'true'));
       return;
     }
 
@@ -129,7 +129,7 @@ function App() {
             return;
           }
 
-          entry.target.classList.add('is-visible');
+          entry.target.setAttribute('data-revealed', 'true');
           observer.unobserve(entry.target);
         });
       },
