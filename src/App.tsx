@@ -9,6 +9,32 @@ const navItems = [
   { href: '#contact', label: '応募・連絡' },
 ];
 
+type AppPhase = 'loading' | 'ready' | 'error';
+
+const MIN_LOADING_MS = 1200;
+const MAX_LOADING_MS = 9000;
+
+function preloadImage(src: string) {
+  return new Promise<void>((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve();
+    image.onerror = () => resolve();
+    image.src = src;
+  });
+}
+
+function waitForWindowLoad() {
+  return new Promise<void>((resolve) => {
+    if (document.readyState === 'complete') {
+      resolve();
+      return;
+    }
+
+    const handleLoad = () => resolve();
+    window.addEventListener('load', handleLoad, { once: true });
+  });
+}
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [slideIndex, setSlideIndex] = useState(0);
@@ -16,13 +42,65 @@ function App() {
   const [days, setDays] = useState(22);
   const [extraJobs, setExtraJobs] = useState(2);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [appPhase, setAppPhase] = useState<AppPhase>('loading');
+
+  const preloadAssets = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          siteData.heroVideo.poster,
+          ...siteData.heroSlides.map((slide) => slide.image),
+          ...siteData.strengths.map((item) => item.image),
+          ...siteData.members.map((member) => member.image),
+        ]),
+      ),
+    [],
+  );
 
   useEffect(() => {
+    let active = true;
+    let timedOut = false;
+    const startedAt = Date.now();
+    let readyTimer = 0;
+
+    const timeoutId = window.setTimeout(() => {
+      timedOut = true;
+      if (active) {
+        setAppPhase('error');
+      }
+    }, MAX_LOADING_MS);
+
+    Promise.allSettled([waitForWindowLoad(), ...preloadAssets.map((src) => preloadImage(src))]).then(() => {
+      if (!active || timedOut) {
+        return;
+      }
+
+      window.clearTimeout(timeoutId);
+      readyTimer = window.setTimeout(() => {
+        if (active) {
+          setAppPhase('ready');
+        }
+      }, Math.max(0, MIN_LOADING_MS - (Date.now() - startedAt)));
+    });
+
+    return () => {
+      active = false;
+      window.clearTimeout(timeoutId);
+      window.clearTimeout(readyTimer);
+    };
+  }, [preloadAssets]);
+
+  useEffect(() => {
+    if (appPhase !== 'ready') {
+      return;
+    }
+
     const timer = window.setInterval(() => {
       setSlideIndex((current) => (current + 1) % siteData.heroSlides.length);
-    }, 4200);
+    }, 4600);
+
     return () => window.clearInterval(timer);
-  }, []);
+  }, [appPhase]);
 
   const activePlan = simulatorPlans.find((item) => item.id === plan) ?? simulatorPlans[0];
 
@@ -36,6 +114,38 @@ function App() {
       currency: 'JPY',
       maximumFractionDigits: 0,
     }).format(value);
+
+  if (appPhase !== 'ready') {
+    const isError = appPhase === 'error';
+
+    return (
+      <div className={`app-state-screen ${isError ? 'is-error' : ''}`}>
+        <div className="app-state-card" role={isError ? 'alert' : 'status'} aria-live="polite">
+          <img
+            className={`loading-logo ${isError ? '' : 'is-loading'}`}
+            src="/favicon.svg"
+            alt={`${siteData.company.name} ロゴ`}
+          />
+          <p className="state-eyebrow">{isError ? 'SERVER ERROR' : 'LOADING'}</p>
+          <h1>{isError ? '読み込みに時間がかかっています' : 'サイトを読み込んでいます'}</h1>
+          <p className="state-copy">
+            {isError
+              ? 'サーバーまたは通信状況の影響で表示準備に時間がかかっています。少し時間を置くか、再読み込みをお試しください。'
+              : 'トップ動画や仮写真を含めた画面を準備しています。'}
+          </p>
+          {isError ? (
+            <button type="button" className="button button-primary" onClick={() => window.location.reload()}>
+              再読み込みする
+            </button>
+          ) : (
+            <div className="loading-bar" aria-hidden="true">
+              <span />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-shell">
@@ -77,73 +187,97 @@ function App() {
       <main id="top">
         <section className="hero-section">
           <div className="hero-backdrop" />
-          <div className="container hero-grid">
-            <div className="hero-copy-block">
-              <p className="eyebrow">RECRUITMENT SITE</p>
-              <h1>{siteData.company.catch}</h1>
-              <p className="hero-lead">{siteData.company.lead}</p>
-              <div className="hero-actions">
-                <a className="button button-primary button-cta" href="#contact">
-                  <span className="button-label">今すぐ応募する</span>
-                  <span className="button-arrow" aria-hidden="true">
-                    →
-                  </span>
-                </a>
-                <a className="button button-secondary button-link" href="#simulator">
-                  <span className="button-label">月収をチェック</span>
-                  <span className="button-arrow button-arrow-static" aria-hidden="true">
-                    →
-                  </span>
-                </a>
-              </div>
-              <ul className="hero-tags">
-                <li>
-                  <span className="hero-tag-dot" />
-                  未経験歓迎
-                </li>
-                <li>
-                  <span className="hero-tag-dot" />
-                  横浜エリア中心
-                </li>
-                <li>
-                  <span className="hero-tag-dot" />
-                  柔軟な案件相談
-                </li>
-              </ul>
-            </div>
+          <div className="container">
+            <div className="hero-video-shell">
+              <video
+                className="hero-video"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                poster={siteData.heroVideo.poster}
+              >
+                <source src={siteData.heroVideo.src} type="video/mp4" />
+              </video>
+              <div className="hero-video-scrim" />
 
-            <div className="hero-slider-card">
-              <div className="hero-slider-viewport">
-                <div
-                  className="hero-slider-track"
-                  style={{ transform: `translateX(-${slideIndex * 100}%)` }}
-                >
-                  {siteData.heroSlides.map((slide) => (
-                    <div key={slide.eyebrow} className={`slide-visual ${slide.theme}`}>
-                      <div className="slide-overlay">
-                        <p className="eyebrow">{slide.eyebrow}</p>
-                        <h2>{slide.title}</h2>
-                        <p>{slide.text}</p>
-                        <div className="slide-stats">
-                          {slide.stats.map((item) => (
-                            <span key={item}>{item}</span>
-                          ))}
+              <div className="hero-stage-grid">
+                <div className="hero-copy-block">
+                  <p className="eyebrow">RECRUITMENT SITE</p>
+                  <h1>{siteData.company.catch}</h1>
+                  <p className="hero-lead">{siteData.company.lead}</p>
+                  <div className="hero-actions">
+                    <a className="button button-primary button-cta" href="#contact">
+                      <span className="button-label">今すぐ応募する</span>
+                      <span className="button-arrow" aria-hidden="true">
+                        →
+                      </span>
+                    </a>
+                    <a className="button button-secondary button-link" href="#simulator">
+                      <span className="button-label">月収をチェック</span>
+                      <span className="button-arrow button-arrow-static" aria-hidden="true">
+                        →
+                      </span>
+                    </a>
+                  </div>
+                  <ul className="hero-tags">
+                    <li>
+                      <span className="hero-tag-dot" />
+                      未経験歓迎
+                    </li>
+                    <li>
+                      <span className="hero-tag-dot" />
+                      横浜エリア中心
+                    </li>
+                    <li>
+                      <span className="hero-tag-dot" />
+                      柔軟な案件相談
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="hero-slider-card">
+                  <div className="hero-slider-viewport">
+                    <div
+                      className="hero-slider-track"
+                      style={{ transform: `translateX(-${slideIndex * 100}%)` }}
+                    >
+                      {siteData.heroSlides.map((slide) => (
+                        <div key={slide.eyebrow} className={`slide-visual ${slide.theme}`}>
+                          <img className="slide-photo" src={slide.image} alt="" />
+                          <div className="slide-filter" />
+                          <div className="slide-overlay">
+                            <p className="eyebrow">{slide.eyebrow}</p>
+                            <h2>{slide.title}</h2>
+                            <p>{slide.text}</p>
+                            <div className="slide-stats">
+                              {slide.stats.map((item) => (
+                                <span key={item}>{item}</span>
+                              ))}
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                  <div className="slider-dots" aria-label="スライダー操作">
+                    {siteData.heroSlides.map((item, index) => (
+                      <button
+                        key={item.eyebrow}
+                        type="button"
+                        className={index === slideIndex ? 'active' : ''}
+                        onClick={() => setSlideIndex(index)}
+                        aria-label={`${index + 1}枚目を表示`}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div className="slider-dots" aria-label="スライダー操作">
-                {siteData.heroSlides.map((item, index) => (
-                  <button
-                    key={item.eyebrow}
-                    type="button"
-                    className={index === slideIndex ? 'active' : ''}
-                    onClick={() => setSlideIndex(index)}
-                    aria-label={`${index + 1}枚目を表示`}
-                  />
-                ))}
+
+              <div className="hero-video-badge">
+                <span>{siteData.heroVideo.label}</span>
+                <small>{siteData.heroVideo.note}</small>
               </div>
             </div>
           </div>
@@ -161,7 +295,10 @@ function App() {
             </div>
             <div className="strength-grid">
               {siteData.strengths.map((item) => (
-                <article key={item.no} className="panel-card">
+                <article key={item.no} className="panel-card strength-card">
+                  <div className="strength-photo">
+                    <img src={item.image} alt="" />
+                  </div>
                   <p className="card-no">{item.no}</p>
                   <h3>{item.title}</h3>
                   <p>{item.text}</p>
@@ -295,13 +432,16 @@ function App() {
               <p className="eyebrow">MEMBERS</p>
               <h2>メンバー紹介</h2>
               <p>
-                `CARAVEL` のメンバー紹介セクションを踏襲しつつ、顔写真が未確定でも公開できるようプレースホルダー仕様にしています。
+                顔写真が後から入る前提で、円形の写真トリミングを先に組み込んでいます。
+                いまは仮写真なので、差し替えるだけで実写に置き換えられます。
               </p>
             </div>
             <div className="member-grid">
               {siteData.members.map((member) => (
                 <article key={member.name} className="member-card">
-                  <div className="member-photo">{member.name.slice(0, 1)}</div>
+                  <div className="member-photo">
+                    <img className="member-photo-image" src={member.image} alt={`${member.role}の仮写真`} />
+                  </div>
                   <h3>{member.name}</h3>
                   <p className="member-role">{member.role}</p>
                   <p>{member.comment}</p>
@@ -331,10 +471,7 @@ function App() {
 
             <div className="faq-grid">
               {siteData.faq.map((item, index) => (
-                <article
-                  key={item.q}
-                  className={`faq-item ${openFaqIndex === index ? 'open' : ''}`}
-                >
+                <article key={item.q} className={`faq-item ${openFaqIndex === index ? 'open' : ''}`}>
                   <button
                     type="button"
                     className="faq-trigger"
