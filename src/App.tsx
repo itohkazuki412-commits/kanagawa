@@ -15,6 +15,7 @@ function App() {
   const [plan, setPlan] = useState<SimulatorPlanId>('regular');
   const [days, setDays] = useState(22);
   const [extraJobs, setExtraJobs] = useState(2);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -23,7 +24,6 @@ function App() {
     return () => window.clearInterval(timer);
   }, []);
 
-  const activeSlide = siteData.heroSlides[slideIndex];
   const activePlan = simulatorPlans.find((item) => item.id === plan) ?? simulatorPlans[0];
 
   const monthlyIncome = useMemo(() => {
@@ -83,31 +83,55 @@ function App() {
               <h1>{siteData.company.catch}</h1>
               <p className="hero-lead">{siteData.company.lead}</p>
               <div className="hero-actions">
-                <a className="button button-primary" href="#contact">
-                  今すぐ応募する
+                <a className="button button-primary button-cta" href="#contact">
+                  <span className="button-label">今すぐ応募する</span>
+                  <span className="button-arrow" aria-hidden="true">
+                    →
+                  </span>
                 </a>
-                <a className="button button-secondary" href="#simulator">
-                  月収をチェック
+                <a className="button button-secondary button-link" href="#simulator">
+                  <span className="button-label">月収をチェック</span>
+                  <span className="button-arrow button-arrow-static" aria-hidden="true">
+                    →
+                  </span>
                 </a>
               </div>
               <ul className="hero-tags">
-                <li>未経験歓迎</li>
-                <li>横浜エリア中心</li>
-                <li>柔軟な案件相談</li>
+                <li>
+                  <span className="hero-tag-dot" />
+                  未経験歓迎
+                </li>
+                <li>
+                  <span className="hero-tag-dot" />
+                  横浜エリア中心
+                </li>
+                <li>
+                  <span className="hero-tag-dot" />
+                  柔軟な案件相談
+                </li>
               </ul>
             </div>
 
             <div className="hero-slider-card">
-              <div className={`slide-visual ${activeSlide.theme}`}>
-                <div className="slide-overlay">
-                  <p className="eyebrow">{activeSlide.eyebrow}</p>
-                  <h2>{activeSlide.title}</h2>
-                  <p>{activeSlide.text}</p>
-                  <div className="slide-stats">
-                    {activeSlide.stats.map((item) => (
-                      <span key={item}>{item}</span>
-                    ))}
-                  </div>
+              <div className="hero-slider-viewport">
+                <div
+                  className="hero-slider-track"
+                  style={{ transform: `translateX(-${slideIndex * 100}%)` }}
+                >
+                  {siteData.heroSlides.map((slide) => (
+                    <div key={slide.eyebrow} className={`slide-visual ${slide.theme}`}>
+                      <div className="slide-overlay">
+                        <p className="eyebrow">{slide.eyebrow}</p>
+                        <h2>{slide.title}</h2>
+                        <p>{slide.text}</p>
+                        <div className="slide-stats">
+                          {slide.stats.map((item) => (
+                            <span key={item}>{item}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
               <div className="slider-dots" aria-label="スライダー操作">
@@ -164,6 +188,7 @@ function App() {
                 <article key={item.title} className="panel-card service-card">
                   <div className="service-visual" />
                   <h3>{item.title}</h3>
+                  {!item.isRecruiting && <p className="status-note">※現在は募集しておりません</p>}
                   <p>{item.text}</p>
                   <ul className="bullet-list">
                     {item.points.map((point) => (
@@ -205,13 +230,16 @@ function App() {
                   <button
                     key={item.id}
                     type="button"
-                    className={item.id === plan ? 'active' : ''}
+                    className={`${item.id === plan ? 'active' : ''} ${!item.isRecruiting ? 'is-closed' : ''}`}
                     onClick={() => setPlan(item.id)}
                   >
                     {item.label}
                   </button>
                 ))}
               </div>
+              {!activePlan.isRecruiting && (
+                <p className="simulator-status-note">※現在は募集しておりません</p>
+              )}
 
               <div className="range-group">
                 <div className="range-header">
@@ -249,8 +277,13 @@ function App() {
                 </span>
               </div>
 
-              <a className="button button-accent simulator-cta" href="#contact">
-                この条件で応募する
+              <a className="button button-accent button-cta simulator-cta" href="#contact">
+                <span className="button-label">
+                  {activePlan.isRecruiting ? 'この条件で応募する' : '募集状況を問い合わせる'}
+                </span>
+                <span className="button-arrow" aria-hidden="true">
+                  →
+                </span>
               </a>
             </div>
           </div>
@@ -289,6 +322,7 @@ function App() {
               {siteData.jobs.map((job) => (
                 <article key={job.title} className="job-card">
                   <h3>{job.title}</h3>
+                  {!job.isRecruiting && <p className="status-note status-note-dark">※現在は募集しておりません</p>}
                   <strong>{job.pay}</strong>
                   <p>{job.body}</p>
                 </article>
@@ -296,11 +330,29 @@ function App() {
             </div>
 
             <div className="faq-grid">
-              {siteData.faq.map((item) => (
-                <details key={item.q} className="faq-item">
-                  <summary>{item.q}</summary>
-                  <p>{item.a}</p>
-                </details>
+              {siteData.faq.map((item, index) => (
+                <article
+                  key={item.q}
+                  className={`faq-item ${openFaqIndex === index ? 'open' : ''}`}
+                >
+                  <button
+                    type="button"
+                    className="faq-trigger"
+                    aria-expanded={openFaqIndex === index}
+                    onClick={() => setOpenFaqIndex((current) => (current === index ? null : index))}
+                  >
+                    <span>{item.q}</span>
+                    <span className="faq-icon" aria-hidden="true">
+                      <span className="faq-icon-bar" />
+                      <span className="faq-icon-bar faq-icon-vertical" />
+                    </span>
+                  </button>
+                  <div className="faq-answer">
+                    <div className="faq-answer-inner">
+                      <p>{item.a}</p>
+                    </div>
+                  </div>
+                </article>
               ))}
             </div>
           </div>
@@ -375,7 +427,10 @@ function App() {
       </main>
 
       <a className="floating-cta" href="#contact">
-        今すぐ応募する
+        <span className="button-label">今すぐ応募する</span>
+        <span className="button-arrow" aria-hidden="true">
+          →
+        </span>
       </a>
 
       <footer className="site-footer">
@@ -384,7 +439,12 @@ function App() {
             <strong>{siteData.company.name}</strong>
             <p>{siteData.company.access}</p>
           </div>
-          <small>© 2026 {siteData.company.name}</small>
+          <div className="footer-actions">
+            <a className="back-to-top" href="#top">
+              トップへ戻る
+            </a>
+            <small>© 2026 {siteData.company.name}</small>
+          </div>
         </div>
       </footer>
     </div>

@@ -57,16 +57,19 @@ export const siteData = {
       title: '定期便',
       text: '企業配送や固定ルート中心。毎月の収入を安定させたい方に向いています。',
       points: ['平日中心の案件あり', '安定稼働しやすい', '長期前提の相談可'],
+      isRecruiting: true,
     },
     {
       title: 'スポット便',
       text: '単発や短時間案件を組み合わせ、柔軟に収入を積み上げられる働き方です。',
       points: ['空き時間活用', '高単価案件あり', '副業相談可'],
+      isRecruiting: false,
     },
     {
       title: '夜間仕分け',
       text: '本業後や早朝前など、限られた時間を活かして働きたい方に人気の案件です。',
       points: ['短時間案件', 'ダブルワーク向き', '体力に応じて調整可'],
+      isRecruiting: false,
     },
   ],
   fleetBlocks: [
@@ -90,16 +93,19 @@ export const siteData = {
       title: '定期便ドライバー',
       pay: '日額 15,000円〜',
       body: '固定に近いスケジュールで、安定して働きたい方向け。企業配送やルート配送を想定しています。',
+      isRecruiting: true,
     },
     {
       title: 'スポット配送ドライバー',
       pay: '案件単価 6,000円〜15,000円',
       body: '単発案件を中心に、空いた時間を活かしたい方向け。副業や併用も相談可能です。',
+      isRecruiting: false,
     },
     {
       title: '夜間仕分けスタッフ',
       pay: '5時間 7,000円〜',
       body: '短時間で働きたい方向け。深夜帯や早朝案件など、生活に合わせて組みやすい構成です。',
+      isRecruiting: false,
     },
   ],
   faq: [
@@ -131,9 +137,9 @@ export const siteData = {
 };
 
 export const simulatorPlans = [
-  { id: 'regular', label: '定期便', dailyFee: 15000, monthlyBase: 30000, accent: 'blue' },
-  { id: 'spot', label: 'スポット', dailyFee: 18000, monthlyBase: 10000, accent: 'cyan' },
-  { id: 'night', label: '夜間仕分け', dailyFee: 9000, monthlyBase: 15000, accent: 'orange' },
+  { id: 'regular', label: '定期便', dailyFee: 15000, monthlyBase: 30000, accent: 'blue', isRecruiting: true },
+  { id: 'spot', label: 'スポット', dailyFee: 18000, monthlyBase: 10000, accent: 'cyan', isRecruiting: false },
+  { id: 'night', label: '夜間仕分け', dailyFee: 9000, monthlyBase: 15000, accent: 'orange', isRecruiting: false },
 ] as const;
 
 export type SimulatorPlanId = (typeof simulatorPlans)[number]['id'];
