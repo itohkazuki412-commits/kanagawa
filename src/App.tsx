@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { simulatorPlans, siteData, type SimulatorPlanId } from './data';
 
 const navItems = [
@@ -15,6 +15,8 @@ type AppPhase = 'loading' | 'ready' | 'error';
 const MIN_LOADING_MS = 1200;
 const MAX_LOADING_MS = 9000;
 const logoAsset = `${import.meta.env.BASE_URL}favicon.svg`;
+
+const revealStyle = (delay: number) => ({ '--reveal-delay': `${delay}ms` } as CSSProperties);
 
 function preloadImage(src: string) {
   return new Promise<void>((resolve) => {
@@ -104,6 +106,78 @@ function App() {
     return () => window.clearInterval(timer);
   }, [appPhase]);
 
+  useEffect(() => {
+    if (appPhase !== 'ready') {
+      return;
+    }
+
+    const elements = Array.from(document.querySelectorAll<HTMLElement>('.reveal-on-scroll'));
+    if (!elements.length) {
+      return;
+    }
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      elements.forEach((element) => element.classList.add('is-visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        });
+      },
+      {
+        threshold: 0.18,
+        rootMargin: '0px 0px -10% 0px',
+      },
+    );
+
+    elements.forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, [appPhase]);
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    const mobileQuery = window.matchMedia('(max-width: 760px)');
+    const isMobile = mobileQuery.matches;
+    if (isMobile) {
+      document.body.style.overflow = 'hidden';
+    }
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMenuOpen(false);
+      }
+    };
+
+    const closeOnDesktop = () => {
+      if (!mobileQuery.matches) {
+        setMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', closeOnEscape);
+    mobileQuery.addEventListener('change', closeOnDesktop);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+      mobileQuery.removeEventListener('change', closeOnDesktop);
+    };
+  }, [menuOpen]);
+
   const activePlan = simulatorPlans.find((item) => item.id === plan) ?? simulatorPlans[0];
   const memberLoops = [siteData.members, siteData.members];
 
@@ -164,8 +238,9 @@ function App() {
 
           <button
             type="button"
-            className="menu-toggle"
+            className={`menu-toggle ${menuOpen ? 'open' : ''}`}
             aria-expanded={menuOpen}
+            aria-controls="site-nav"
             aria-label="メニューを開閉"
             onClick={() => setMenuOpen((current) => !current)}
           >
@@ -174,16 +249,26 @@ function App() {
             <span />
           </button>
 
-          <nav className={`site-nav ${menuOpen ? 'open' : ''}`}>
+          <nav id="site-nav" className={`site-nav ${menuOpen ? 'open' : ''}`}>
             {navItems.map((item) => (
               <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
                 {item.label}
               </a>
             ))}
-            <a className="button button-primary button-nav" href={siteData.company.entryUrl}>
+            <a
+              className="button button-primary button-nav"
+              href={siteData.company.entryUrl}
+              onClick={() => setMenuOpen(false)}
+            >
               応募する
             </a>
           </nav>
+          <button
+            type="button"
+            className={`nav-scrim ${menuOpen ? 'open' : ''}`}
+            aria-label="メニューを閉じる"
+            onClick={() => setMenuOpen(false)}
+          />
         </div>
       </header>
 
@@ -288,7 +373,7 @@ function App() {
 
         <section className="section section-intro" id="about">
           <div className="container">
-            <div className="section-heading">
+            <div className="section-heading reveal-on-scroll" data-reveal="up">
               <p className="eyebrow">ABOUT US</p>
               <h2>配送を、働く人にとっても誇れる仕事に。</h2>
               <p>
@@ -297,8 +382,13 @@ function App() {
               </p>
             </div>
             <div className="strength-grid">
-              {siteData.strengths.map((item) => (
-                <article key={item.no} className="panel-card strength-card">
+              {siteData.strengths.map((item, index) => (
+                <article
+                  key={item.no}
+                  className="panel-card strength-card reveal-on-scroll"
+                  data-reveal="up"
+                  style={revealStyle(index * 90)}
+                >
                   <div className="strength-photo">
                     <img src={item.image} alt="" />
                   </div>
@@ -313,7 +403,7 @@ function App() {
 
         <section className="section" id="service">
           <div className="container">
-            <div className="split-heading">
+            <div className="split-heading reveal-on-scroll" data-reveal="up">
               <div className="section-heading">
                 <p className="eyebrow">SERVICE</p>
                 <h2>仕事内容と対応サービス</h2>
@@ -324,8 +414,13 @@ function App() {
             </div>
 
             <div className="service-grid">
-              {siteData.serviceBlocks.map((item) => (
-                <article key={item.title} className={`panel-card service-card service-card-${item.theme}`}>
+              {siteData.serviceBlocks.map((item, index) => (
+                <article
+                  key={item.title}
+                  className={`panel-card service-card service-card-${item.theme} reveal-on-scroll`}
+                  data-reveal="up"
+                  style={revealStyle(index * 90)}
+                >
                   <div className={`service-visual service-visual-${item.theme}`} />
                   <h3>{item.title}</h3>
                   {!item.isRecruiting && <p className="status-note">※現在は募集しておりません</p>}
@@ -340,8 +435,13 @@ function App() {
             </div>
 
             <div className="fleet-grid">
-              {siteData.fleetBlocks.map((item) => (
-                <article key={item.title} className="fleet-card">
+              {siteData.fleetBlocks.map((item, index) => (
+                <article
+                  key={item.title}
+                  className="fleet-card reveal-on-scroll"
+                  data-reveal="up"
+                  style={revealStyle(180 + index * 90)}
+                >
                   <div>
                     <p className="eyebrow">FLEET</p>
                     <h3>{item.title}</h3>
@@ -355,7 +455,7 @@ function App() {
 
         <section className="section simulator-section" id="simulator">
           <div className="container simulator-wrap">
-            <div className="section-heading simulator-head">
+            <div className="section-heading simulator-head reveal-on-scroll" data-reveal="left">
               <p className="eyebrow">INCOME SIMULATOR</p>
               <h2>あなたの月収をシミュレーション</h2>
               <p>
@@ -364,7 +464,7 @@ function App() {
               </p>
             </div>
 
-            <div className="simulator-card">
+            <div className="simulator-card reveal-on-scroll" data-reveal="right" style={revealStyle(100)}>
               <div className="simulator-tabs" role="tablist" aria-label="働き方を選択">
                 {simulatorPlans.map((item) => (
                   <button
@@ -431,7 +531,7 @@ function App() {
 
         <section className="section" id="members">
           <div className="container">
-            <div className="section-heading">
+            <div className="section-heading reveal-on-scroll" data-reveal="up">
               <p className="eyebrow">MEMBERS</p>
               <h2>メンバー紹介</h2>
               <p>
@@ -439,7 +539,7 @@ function App() {
                 いまは仮写真なので、差し替えるだけで実写に置き換えられます。
               </p>
             </div>
-            <div className="member-marquee">
+            <div className="member-marquee reveal-on-scroll" data-reveal="up" style={revealStyle(120)}>
               <div className="member-track">
                 {memberLoops.map((group, loopIndex) => (
                   <div
@@ -466,17 +566,19 @@ function App() {
 
         <section className="section recruit-section" id="recruit">
           <div className="container">
-            <div className="section-heading recruit-heading">
+            <div className="section-heading recruit-heading reveal-on-scroll" data-reveal="up">
               <p className="eyebrow">RECRUIT</p>
               <h2>募集職種</h2>
               <p>現在募集中の働き方や報酬イメージを、一覧で分かりやすく確認できるように整理しています。</p>
             </div>
             <div className="recruit-list">
-              {siteData.jobs.map((job) => (
+              {siteData.jobs.map((job, index) => (
                 <a
                   key={job.title}
-                  className={`recruit-item ${job.isRecruiting ? 'is-open' : 'is-closed'} recruit-item-${job.theme}`}
+                  className={`recruit-item ${job.isRecruiting ? 'is-open' : 'is-closed'} recruit-item-${job.theme} reveal-on-scroll`}
                   href="#contact"
+                  data-reveal="up"
+                  style={revealStyle(index * 100)}
                 >
                   <div className="recruit-item-body">
                     <h3>{job.title}</h3>
@@ -509,14 +611,19 @@ function App() {
 
         <section className="section faq-section" id="faq">
           <div className="container">
-            <div className="section-heading faq-heading">
+            <div className="section-heading faq-heading reveal-on-scroll" data-reveal="up">
               <p className="eyebrow">Q&A</p>
               <h2>よくある質問</h2>
               <p>応募前にいただくことの多い質問を、まとめて確認できるようにしています。</p>
             </div>
             <div className="faq-grid">
               {siteData.faq.map((item, index) => (
-                <article key={item.q} className={`faq-item ${openFaqIndex === index ? 'open' : ''}`}>
+                <article
+                  key={item.q}
+                  className={`faq-item ${openFaqIndex === index ? 'open' : ''} reveal-on-scroll`}
+                  data-reveal="up"
+                  style={revealStyle(index * 80)}
+                >
                   <button
                     type="button"
                     className="faq-trigger"
@@ -542,7 +649,7 @@ function App() {
 
         <section className="section company-section" id="company">
           <div className="container company-grid">
-            <div>
+            <div className="reveal-on-scroll" data-reveal="left">
               <div className="section-heading">
                 <p className="eyebrow">COMPANY</p>
                 <h2>会社概要</h2>
@@ -557,7 +664,7 @@ function App() {
               </div>
             </div>
 
-            <div className="map-card">
+            <div className="map-card reveal-on-scroll" data-reveal="right" style={revealStyle(120)}>
               {siteData.company.mapEmbedUrl ? (
                 <iframe
                   title="会社所在地"
@@ -577,7 +684,7 @@ function App() {
 
         <section className="section contact-section" id="contact">
           <div className="container contact-shell">
-            <div className="contact-copy">
+            <div className="contact-copy reveal-on-scroll" data-reveal="left">
               <p className="eyebrow">CONTACT</p>
               <h2>応募・お問い合わせ</h2>
               <p>
@@ -594,7 +701,7 @@ function App() {
               </div>
             </div>
 
-            <div className="contact-data">
+            <div className="contact-data reveal-on-scroll" data-reveal="right" style={revealStyle(120)}>
               <div className="contact-data-row">
                 <span>会社名</span>
                 <strong>{siteData.company.name}</strong>
@@ -628,7 +735,7 @@ function App() {
       </a>
 
       <footer className="site-footer">
-        <div className="container footer-row">
+        <div className="container footer-row reveal-on-scroll" data-reveal="up">
           <div>
             <strong>{siteData.company.name}</strong>
             <p>{siteData.company.access}</p>
