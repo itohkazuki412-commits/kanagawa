@@ -80,7 +80,7 @@ function handleKeydown(event: KeyboardEvent) {
         type="button"
         class="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/16 bg-white/6 text-white transition hover:bg-white/10 lg:hidden"
         :aria-expanded="isMenuOpen"
-        aria-label="メニューを開く"
+        :aria-label="isMenuOpen ? 'メニューを閉じる' : 'メニューを開く'"
         @click="isMenuOpen = !isMenuOpen"
       >
         <span
@@ -111,8 +111,26 @@ function handleKeydown(event: KeyboardEvent) {
     <Transition name="menu-panel">
       <aside
         v-if="isMenuOpen"
-        class="fixed inset-y-0 right-0 z-50 w-[280px] border-l border-white/10 bg-bgSecondary px-6 pb-8 pt-24 text-white shadow-2xl lg:hidden"
+        class="fixed inset-y-0 right-0 z-[60] w-[280px] border-l border-white/10 bg-bgSecondary px-6 pb-8 pt-6 text-white shadow-2xl lg:hidden"
       >
+        <div class="mb-8 flex items-center justify-between">
+          <div>
+            <p class="text-[9px] font-medium uppercase tracking-[0.32em] text-white/30">Menu</p>
+            <p class="mt-2 text-[14px] font-semibold text-white">サイトメニュー</p>
+          </div>
+          <button
+            type="button"
+            class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white transition hover:bg-white/10"
+            aria-label="メニューを閉じる"
+            @click="closeMenu"
+          >
+            <span class="relative block h-4 w-4">
+              <span class="absolute left-1/2 top-1/2 block h-px w-4 -translate-x-1/2 -translate-y-1/2 rotate-45 bg-white" />
+              <span class="absolute left-1/2 top-1/2 block h-px w-4 -translate-x-1/2 -translate-y-1/2 -rotate-45 bg-white" />
+            </span>
+          </button>
+        </div>
+
         <nav class="flex flex-col gap-3">
           <a
             v-for="(item, index) in siteData.navigation"
