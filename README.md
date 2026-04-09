@@ -1,12 +1,18 @@
 # JLS Recruit Site
 
-React + TypeScript + Vite で作成した採用サイトです。
+Nuxt 3 + TypeScript + Tailwind CSS で作成した宅配ドライバー採用サイトです。
 
 ## ローカル確認
 
 ```bash
 npm install
 npm run dev
+```
+
+静的出力を確認する場合:
+
+```bash
+npm run build
 ```
 
 ## GitHub Pages 公開
